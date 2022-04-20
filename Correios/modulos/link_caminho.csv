@@ -1,0 +1,2 @@
+url,xpath
+https://www2.correios.com.br/sistemas/buscacep/BuscaCepEndereco.cfm,//*[@id="Geral"]/div/div/div[6]/input
