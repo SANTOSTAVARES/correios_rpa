@@ -23,17 +23,17 @@ def csv_to_dict(arquivo):
     return dict(zip(chave, valor))
 
 def teste1():
-    endereco = 'feliz natal'
+    
     url = csv_to_dict(pagina_web)['url']
     abrir_browser = webdriver.Chrome()
     abrir_browser.get(url)
 
+    endereco = 'feliz natal'
     abrir_browser.find_element_by_name('relaxation').send_keys(endereco)
     xpath = csv_to_dict(pagina_web)['xpath']
     botao_pesquisar = abrir_browser.find_element(By.XPATH, xpath)
     clicar_botao = botao_pesquisar.click()
 
-        
     xpath_celula_parte1 = csv_to_dict(pagina_web)['xpath_celula_1']
     xpath_celula_parte2 = csv_to_dict(pagina_web)['xpath_celula_2']
     xpath_celula_parte3 = csv_to_dict(pagina_web)['xpath_celula_3']
@@ -53,7 +53,7 @@ def teste1():
         colunas_por_linha = []
         coluna = 1
     return tabela_endereco
-teste1()
+print(teste1())
 """ 
 /html/body/div[1]/div[3]/div[2]/div/div/div[2]/div[2]/div[2]/table/tbody/tr[{linha}]/td[{coluna}]
 linha = 1
@@ -63,7 +63,7 @@ xpath_celula_parte2 = '}]/td[{'
 xpath_celula_parte3 = '}]'
 /html/body/div[1]/div[3]/div[2]/div/div/div[2]/div[2]/div[2]/table/tbody/tr[{,}]/td[{,}]
 print(xpath_celula_parte1 + str(linha) + xpath_celula_parte2 + str(coluna) + xpath_celula_parte3)
-"""
+
 
 [['Rua Feliz Natal ', 'Doutor Fábio Leite ', 'Cuiabá/MT ', '78052-125'], 
 ['Rua Feliz Natal ', 'Novos Campos ', 'Sorriso/MT ', '78898-139'], 
@@ -76,3 +76,4 @@ print(xpath_celula_parte1 + str(linha) + xpath_celula_parte2 + str(coluna) + xpa
 ['Avenida Felizardo Firmino Moura ', 'Nordeste ', 'Natal/RN ', '59042-200'], 
 ['Rua General Felizardo Brito ', 'Capim Macio ', 'Natal/RN ', '59078-410'], 
 ['Vila Felizardo Moura ', 'Nordeste ', 'Natal/RN ', '59042-203']]
+"""
