@@ -46,13 +46,18 @@ def qtde_resultado_pag1():
     for i in texto_resultado:
         texto = i.text
 
-    msg_dados_encontrados = texto[0:30]
-    msg_qtde_resultado = texto[73:]
-    posicao_a = msg_qtde_resultado.find('a')
-    posicao_de = msg_qtde_resultado.find('de')
-    msg_qtde_resultado = int(msg_qtde_resultado[posicao_a + 2:posicao_de - 1])
-    
-    return(msg_dados_encontrados, msg_qtde_resultado)
+    try:
+        msg_qtde_resultado = texto[73:]
+        posicao_a = msg_qtde_resultado.find('a')
+        posicao_de = msg_qtde_resultado.find('de')
+        msg_qtde_resultado = int(msg_qtde_resultado[posicao_a + 2:posicao_de - 1])
+    except ValueError as erro:
+        print(f'Foi encontrado o erro abaixo:\n{erro}' )
+        msg_qtde_resultado = None
+    else:
+        print('A pesquisa encontrou dados com sucesso')
+    finally:
+        return msg_qtde_resultado
   
 def buscar_endereco(endereco_planilha):
     """ Acessa a url informada no arquivo link_caminhos.csv e realiza a busca de endereço. """
@@ -80,16 +85,19 @@ def retorna_resultado_pesquisa(endereco_planilha):
     linha = 1
     coluna = 1
 
-    for x in range(qtde_resultado_pag1()[1]):
-        linha += 1
-        for y in range(4):
-            celula = abrir_browser.find_elements_by_xpath(xpath_celula_parte1 + str(linha) + xpath_celula_parte2 + str(coluna) + xpath_celula_parte3)
-            for z in celula:
-                colunas_por_linha.append(z.text)
-            coluna += 1
-        tabela_endereco.append(colunas_por_linha)
-        colunas_por_linha = []
-        coluna = 1
+    if qtde_resultado_pag1() is None:
+        tabela_endereco = None
+    else:
+        for x in range(qtde_resultado_pag1()):
+            linha += 1
+            for y in range(4):
+                celula = abrir_browser.find_elements_by_xpath(xpath_celula_parte1 + str(linha) + xpath_celula_parte2 + str(coluna) + xpath_celula_parte3)
+                for z in celula:
+                    colunas_por_linha.append(z.text)
+                coluna += 1
+            tabela_endereco.append(colunas_por_linha)
+            colunas_por_linha = []
+            coluna = 1
     abrir_browser.close()
     
     return tabela_endereco
@@ -110,6 +118,7 @@ def planilha_to_list(nome_planilha_entrada):
     """ Converte para lista do Python, dados de um arquivo excel. """
 
     arquivo_entrada = pd.read_excel(csv_to_dict(pagina_web)['pasta_entrada'] + nome_planilha_entrada, header=None)
+    arquivo_entrada = arquivo_entrada.fillna('')
     return arquivo_entrada.values.tolist()
 
 def teste():
@@ -122,30 +131,102 @@ def teste():
         linha_saida = []
         for x in planilha_to_list(identificar_entrada()):
             
-        #if x[2] == 'CEP':
             if len(str(x[1])) < 3:
+                print(f'A palavra abaixo contém menos de 3 digitos:\n{x[1]}')
                 linha_saida.append(linha_entrada)
                 linha_saida.append('Texto de endereço é insuficiente, por ser menor que 3 digitos')
-            
+                linha_saida.append(x[1])
+                tabela_saida.append(linha_saida)
+                linha_saida = []
             else:   
-                for y in retorna_resultado_pesquisa(x[1]):
+                if retorna_resultado_pesquisa(x[1]) is None:
                     linha_saida.append(linha_entrada)
-                    linha_saida.append('CEP')
+                    linha_saida.append('Texto de endereço não encontrou nenhum resultado na pesquisa')
                     linha_saida.append(x[1])
-                    linha_saida.append(y[0])
-                    linha_saida.append(y[1])
-                    linha_saida.append(y[2])
-                    linha_saida.append(y[3])
                     tabela_saida.append(linha_saida)
                     linha_saida = []
-            tabela_saida.append(linha_saida)
+                else: 
+                    for y in retorna_resultado_pesquisa(x[1]):
+                        linha_saida.append(linha_entrada)
+                        linha_saida.append('CEP')
+                        linha_saida.append(x[1]) 
+                        for z in range(4):
+                            linha_saida.append(y[z])
+                        
+                        tabela_saida.append(linha_saida)
+                        linha_saida = []
+                        
             linha_entrada += 1
-            linha_saida = []
+            
 
         return tabela_saida
 
-            
-            
 
 
-print(teste())
+def teste2():
+    
+    linha_entrada = 1
+    tabela_saida = []
+    linha_saida = []
+    coluna_referencia = ''
+
+    def menor_3_digitos():
+        linha_saida = []
+        print(f'A palavra abaixo contém menos de 3 digitos:\n{x[coluna_referencia]}')
+        linha_saida.append(linha_entrada)
+        linha_saida.append('Texto de endereço é insuficiente, por ser menor que 3 digitos')
+        linha_saida.append(x[coluna_referencia])
+        tabela_saida.append(linha_saida)
+        linha_saida = []
+
+    def resultado_none():
+        linha_saida = []
+        linha_saida.append(linha_entrada)
+        linha_saida.append('Texto de endereço não encontrou nenhum resultado na pesquisa')
+        linha_saida.append(x[coluna_referencia])
+        tabela_saida.append(linha_saida)
+        linha_saida = []
+    
+    def preencher_resultado():
+        linha_saida.append(linha_entrada)
+        if coluna_referencia == 0:
+            linha_saida.append('Nome')
+            linha_saida.append(x[0]) 
+        else:
+            linha_saida.append('CEP')
+            linha_saida.append(x[1]) 
+        for z in range(4):
+            linha_saida.append(y[z])
+    
+    if identificar_entrada() is None:
+        Continue
+    else:    
+        for x in planilha_to_list(identificar_entrada()):
+            
+            if x[2] == 'Nome':
+                coluna_referencia = 0
+            elif x[2] == 'Cep':
+                coluna_referencia = 1 
+            else:
+                if x[0] != '':
+                    coluna_referencia = 0
+                else:
+                    coluna_referencia = 1
+
+            if len(str(x[coluna_referencia])) < 3:
+                menor_3_digitos()
+            else:
+                if retorna_resultado_pesquisa(x[coluna_referencia]) is None:
+                    resultado_none()
+                else:
+                    for y in retorna_resultado_pesquisa(x[coluna_referencia]):
+                        preencher_resultado()
+                    tabela_saida.append(linha_saida)
+                    linha_saida = []
+            
+            linha_entrada += 1
+        print('finalizoooou')  
+        return tabela_saida
+        
+
+print(teste2())
