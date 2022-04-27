@@ -36,7 +36,6 @@ def mover_arquivo():
 
 pagina_web = 'link_caminho.csv'
 
-
 def qtde_resultado_pag1():
     """ Retorna o texto se o dados foram encontrados com sucesso.
     E retorna o número que está entre a letra 'a' e a palavra 'de' no texto."""
@@ -102,7 +101,6 @@ def retorna_resultado_pesquisa(endereco_planilha):
     
     return tabela_endereco
 
-
 def identificar_entrada():
     """ Retorna o nome de um arquivo que está na pasta. """
 
@@ -119,6 +117,8 @@ def planilha_to_list(nome_planilha_entrada):
 
     arquivo_entrada = pd.read_excel(csv_to_dict(pagina_web)['pasta_entrada'] + nome_planilha_entrada, header=None)
     arquivo_entrada = arquivo_entrada.fillna('')
+    arquivo_entrada[[0, 1]] = arquivo_entrada[[0, 1]].astype(str)
+    arquivo_entrada[1] = arquivo_entrada[1].apply(lambda x: x.replace('.0', ''))
     return arquivo_entrada.values.tolist()
 
 def teste():
@@ -161,8 +161,6 @@ def teste():
 
         return tabela_saida
 
-
-
 def teste2():
     
     linha_entrada = 1
@@ -202,31 +200,37 @@ def teste2():
         Continue
     else:    
         for x in planilha_to_list(identificar_entrada()):
-            
-            if x[2] == 'Nome':
-                coluna_referencia = 0
-            elif x[2] == 'Cep':
-                coluna_referencia = 1 
-            else:
-                if x[0] != '':
+            try:
+                if x[2] == 'Nome':
                     coluna_referencia = 0
+                elif x[2] == 'Cep':
+                    coluna_referencia = 1 
                 else:
-                    coluna_referencia = 1
+                    if x[0] != '':
+                        coluna_referencia = 0
+                    else:
+                        coluna_referencia = 1
 
-            if len(str(x[coluna_referencia])) < 3:
-                menor_3_digitos()
+            except IndexError as erro:
+                print(f'Ao buscar os dados a seguir:\n{x}\nOcorreu o seguinte erro:\n{erro}')
+
             else:
-                if retorna_resultado_pesquisa(x[coluna_referencia]) is None:
-                    resultado_none()
+                if len(str(x[coluna_referencia])) < 3:
+                    menor_3_digitos()
                 else:
-                    for y in retorna_resultado_pesquisa(x[coluna_referencia]):
-                        preencher_resultado()
-                    tabela_saida.append(linha_saida)
-                    linha_saida = []
-            
+                    if retorna_resultado_pesquisa(x[coluna_referencia]) is None:
+                        resultado_none()
+                    else:
+                        for y in retorna_resultado_pesquisa(x[coluna_referencia]):
+                            preencher_resultado()
+                            tabela_saida.append(linha_saida)
+                            linha_saida = []
+                
             linha_entrada += 1
-        print('finalizoooou')  
-        return tabela_saida
+    
+    tabela_saida = pd.DataFrame(tabela_saida, columns=['Linha Excel Entrada', 'Critério Busca Utilizado', 'Parâmetro de busca utilizado', 'Logradouro/Nome:', 'Bairro/Distrito:', 'Localidade/UF:', 'CEP:'])
+    tabela_saida.to_excel('saida.xlsx')
+    return tabela_saida
         
 
 print(teste2())
