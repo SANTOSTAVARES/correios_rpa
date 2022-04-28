@@ -1,5 +1,7 @@
 from ast import Continue
 from lib2to3.pgen2 import driver
+from operator import index
+from time import time
 from numpy import append
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -9,6 +11,8 @@ import pandas as pd
 from os import listdir, mkdir
 from os.path import isfile
 import shutil
+from datetime import datetime
+import time
 
 def csv_to_dict(arquivo):
     ''' Converte para dicionário, dados de um arquivo CSV que contenham duas linhas.
@@ -27,14 +31,14 @@ def csv_to_dict(arquivo):
 
     return dict(zip(chave, valor))
 
-def criar_pasta():
-    mkdir(csv_to_dict(pagina_web)['pasta_saida'] + 'Pasta_teste')
-    return 'Diretório criado com sucesso.'
-
-def mover_arquivo():
-    shutil.move('..\A-Entrada\modelo.xlsx', '..\C-Saida')
-
 pagina_web = 'link_caminho.csv'
+
+def criar_pasta():
+    
+    nome_pasta = str(datetime.now())[:-7].replace(':', '.')
+    mkdir(csv_to_dict(pagina_web)['pasta_saida'] + nome_pasta)
+    print('Diretório criado com sucesso.')
+    return nome_pasta
 
 def qtde_resultado_pag1():
     """ Retorna o texto se o dados foram encontrados com sucesso.
@@ -119,118 +123,96 @@ def planilha_to_list(nome_planilha_entrada):
     arquivo_entrada = arquivo_entrada.fillna('')
     arquivo_entrada[[0, 1]] = arquivo_entrada[[0, 1]].astype(str)
     arquivo_entrada[1] = arquivo_entrada[1].apply(lambda x: x.replace('.0', ''))
-    return arquivo_entrada.values.tolist()
+    arquivo_entrada = arquivo_entrada.values.tolist()
+    de_para = []
+    for i in arquivo_entrada:
+        if len(i) == 2: #Este If foi adicionado só para evitar um Idexerror caso o usuário disponibilize uma planilha sem nenhum preenchimento na coluna c.
+            i.append('')
 
-def teste():
+        if i[2] == 'Nome':
+            de_para.append(['Nome', i[0]])
+        elif i[2] == 'CEP':
+            de_para.append(['CEP', i[1]])
+        elif i[2] == '' and i[0] != '':
+            de_para.append(['Nome', i[0]])
+        else:
+            de_para.append(['CEP', i[1]])
     
-    if identificar_entrada() is None:
-        Continue
-    else:
+    return de_para
+
+def rotina_buscar_endereco():
+    """ Realiza o loop contínuo sobre as planilhas de entrada e, as tranfere para um novo destino
+    junto com a planilha com os resultados das buscas. """
+    
+    while True:
+
+        
         linha_entrada = 1
         tabela_saida = []
         linha_saida = []
-        for x in planilha_to_list(identificar_entrada()):
-            
-            if len(str(x[1])) < 3:
-                print(f'A palavra abaixo contém menos de 3 digitos:\n{x[1]}')
-                linha_saida.append(linha_entrada)
-                linha_saida.append('Texto de endereço é insuficiente, por ser menor que 3 digitos')
-                linha_saida.append(x[1])
-                tabela_saida.append(linha_saida)
-                linha_saida = []
-            else:   
-                if retorna_resultado_pesquisa(x[1]) is None:
-                    linha_saida.append(linha_entrada)
-                    linha_saida.append('Texto de endereço não encontrou nenhum resultado na pesquisa')
-                    linha_saida.append(x[1])
-                    tabela_saida.append(linha_saida)
-                    linha_saida = []
-                else: 
-                    for y in retorna_resultado_pesquisa(x[1]):
-                        linha_saida.append(linha_entrada)
-                        linha_saida.append('CEP')
-                        linha_saida.append(x[1]) 
-                        for z in range(4):
-                            linha_saida.append(y[z])
-                        
-                        tabela_saida.append(linha_saida)
-                        linha_saida = []
-                        
-            linha_entrada += 1
-            
 
-        return tabela_saida
+        def menor_3_digitos():
+            linha_saida = []
+            print(f'A palavra abaixo contém menos de 3 digitos:\n{x[1]}')
+            linha_saida.append(linha_entrada)
+            linha_saida.append('Texto de endereço é insuficiente, por ser menor que 3 digitos')
+            linha_saida.append(x[1])
+            for _ in range(4):
+                linha_saida.append('')
+            tabela_saida.append(linha_saida)
+            linha_saida = []
 
-def teste2():
-    
-    linha_entrada = 1
-    tabela_saida = []
-    linha_saida = []
-    coluna_referencia = ''
-
-    def menor_3_digitos():
-        linha_saida = []
-        print(f'A palavra abaixo contém menos de 3 digitos:\n{x[coluna_referencia]}')
-        linha_saida.append(linha_entrada)
-        linha_saida.append('Texto de endereço é insuficiente, por ser menor que 3 digitos')
-        linha_saida.append(x[coluna_referencia])
-        tabela_saida.append(linha_saida)
-        linha_saida = []
-
-    def resultado_none():
-        linha_saida = []
-        linha_saida.append(linha_entrada)
-        linha_saida.append('Texto de endereço não encontrou nenhum resultado na pesquisa')
-        linha_saida.append(x[coluna_referencia])
-        tabela_saida.append(linha_saida)
-        linha_saida = []
-    
-    def preencher_resultado():
-        linha_saida.append(linha_entrada)
-        if coluna_referencia == 0:
-            linha_saida.append('Nome')
-            linha_saida.append(x[0]) 
-        else:
-            linha_saida.append('CEP')
-            linha_saida.append(x[1]) 
-        for z in range(4):
-            linha_saida.append(y[z])
-    
-    if identificar_entrada() is None:
-        Continue
-    else:    
-        for x in planilha_to_list(identificar_entrada()):
-            try:
-                if x[2] == 'Nome':
-                    coluna_referencia = 0
-                elif x[2] == 'Cep':
-                    coluna_referencia = 1 
-                else:
-                    if x[0] != '':
-                        coluna_referencia = 0
-                    else:
-                        coluna_referencia = 1
-
-            except IndexError as erro:
-                print(f'Ao buscar os dados a seguir:\n{x}\nOcorreu o seguinte erro:\n{erro}')
-
-            else:
-                if len(str(x[coluna_referencia])) < 3:
-                    menor_3_digitos()
-                else:
-                    if retorna_resultado_pesquisa(x[coluna_referencia]) is None:
-                        resultado_none()
-                    else:
-                        for y in retorna_resultado_pesquisa(x[coluna_referencia]):
-                            preencher_resultado()
-                            tabela_saida.append(linha_saida)
-                            linha_saida = []
-                
-            linha_entrada += 1
-    
-    tabela_saida = pd.DataFrame(tabela_saida, columns=['Linha Excel Entrada', 'Critério Busca Utilizado', 'Parâmetro de busca utilizado', 'Logradouro/Nome:', 'Bairro/Distrito:', 'Localidade/UF:', 'CEP:'])
-    tabela_saida.to_excel('saida.xlsx')
-    return tabela_saida
+        def resultado_none():
+            linha_saida = []
+            linha_saida.append(linha_entrada)
+            linha_saida.append('Texto de endereço não encontrou nenhum resultado na pesquisa')
+            linha_saida.append(x[1])
+            for _ in range(4):
+                linha_saida.append('')
+            tabela_saida.append(linha_saida)
+            linha_saida = []
         
-
-print(teste2())
+        def preencher_resultado():
+            linha_saida.append(linha_entrada)
+            linha_saida.append(x[0])
+            linha_saida.append(x[1]) 
+            for z in range(4):
+                linha_saida.append(y[z])
+        
+        def mover_arquivo_destino():
+        
+            shutil.move(csv_to_dict(pagina_web)['pasta_entrada'] + planilha_entrada, endereco_pasta_destino)
+        
+        try:
+            if identificar_entrada() is None:
+                loop_sem_entrada = True
+                Continue
+            else:   
+                planilha_entrada = identificar_entrada()
+                for x in planilha_to_list(identificar_entrada()):
+                    if len(x[1]) < 3:
+                        menor_3_digitos()
+                    else:
+                            if retorna_resultado_pesquisa(x[1]) is None:
+                                resultado_none()
+                            else:
+                                for y in retorna_resultado_pesquisa(x[1]):
+                                    preencher_resultado()
+                                    tabela_saida.append(linha_saida)
+                                    linha_saida = []
+                    linha_entrada += 1
+                loop_sem_entrada = False
+        except Exception as erro:
+            print(f'Ao executar a busca por endereços, ocorreu o seguinte erro: {erro}.')
+        else:
+            if loop_sem_entrada == True:
+                print('Não há entrada para execução de tarefa.')
+            else:
+                tabela_saida = pd.DataFrame(tabela_saida, columns=['Linha Excel Entrada', 'Critério Busca Utilizado', 'Parâmetro de busca utilizado', 'Logradouro/Nome:', 'Bairro/Distrito:', 'Localidade/UF:', 'CEP:'])
+                pasta_destino = criar_pasta()
+                endereco_pasta_destino = f"{csv_to_dict(pagina_web)['pasta_saida']}{pasta_destino}"
+                mover_arquivo_destino()
+                tabela_saida.to_excel(f"{endereco_pasta_destino}\\resultado-{planilha_entrada}", index=False)
+        finally:
+            print(f'Loop finalizado. A rotina será executado novamente em 10 segundos.')
+            time.sleep(10)
