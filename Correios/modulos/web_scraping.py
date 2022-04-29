@@ -145,8 +145,6 @@ def rotina_buscar_endereco():
     junto com a planilha com os resultados das buscas. """
     
     while True:
-
-        
         linha_entrada = 1
         tabela_saida = []
         linha_saida = []
@@ -193,10 +191,11 @@ def rotina_buscar_endereco():
                     if len(x[1]) < 3:
                         menor_3_digitos()
                     else:
-                            if retorna_resultado_pesquisa(x[1]) is None:
+                            tabela_resultado_pesquisa = retorna_resultado_pesquisa(x[1])
+                            if tabela_resultado_pesquisa is None:
                                 resultado_none()
                             else:
-                                for y in retorna_resultado_pesquisa(x[1]):
+                                for y in tabela_resultado_pesquisa:
                                     preencher_resultado()
                                     tabela_saida.append(linha_saida)
                                     linha_saida = []
