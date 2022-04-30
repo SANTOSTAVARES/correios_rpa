@@ -36,8 +36,7 @@ C-Saida
 
 # Funcionalidades
 
-Para colocar programa em produção, execute no terminal arquivo main.py disponível em '\Correios\modulos'. O programa irá realizar um loop contínuo, até que uma seja disponibilizada.
-Adicione um arquivo excel no diretório '\Correios\A-Entrada'. Este arquivo deve ter o preenchimento entre as A, B e C. Caso queira procurar um endereço que você tem possui a descrição incompleta, siga os seguintes parâmetro:
+Para colocar programa em produção, execute no terminal arquivo main.py disponível em '\Correios\modulos'. O programa irá realizar um loop contínuo, até que uma seja disponibilizada um arquivo excel no diretório '\Correios\A-Entrada'. Este arquivo deve ter o preenchimento entre as colunas A, B e C. Caso queira procurar um endereço que você possui a descrição incompleta. Siga os seguintes parâmetro:
 Na coluna A pode ser adcionado o Nome do endereço. Por exemplo: Avenida Paulista
 Na coluna B pode ser adcionado o CEP do endereço. Por exemplo: 15370
 Na coluna C pode ser pré-determinado o parâmetro de busca como 'Nome', CEP ou deixar sem preenchimento. Neste último caso, será considerado primeiro o parâmetro Nome e em seguida CEP.
