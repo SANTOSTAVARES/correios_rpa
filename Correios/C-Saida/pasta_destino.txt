@@ -1,0 +1,1 @@
+A pasta C-Saida, é o destino dos resultados das buscas a serem realizadas no site dos Correios.
