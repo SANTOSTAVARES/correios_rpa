@@ -87,11 +87,12 @@ def retorna_resultado_pesquisa(endereco_planilha):
     colunas_por_linha = []
     linha = 1
     coluna = 1
-
-    if qtde_resultado_pag1() is None:
+    tabela_resultado_site = qtde_resultado_pag1()
+    
+    if tabela_resultado_site is None:
         tabela_endereco = None
     else:
-        for x in range(qtde_resultado_pag1()):
+        for x in range(tabela_resultado_site):
             linha += 1
             for y in range(4):
                 celula = abrir_browser.find_elements_by_xpath(xpath_celula_parte1 + str(linha) + xpath_celula_parte2 + str(coluna) + xpath_celula_parte3)
@@ -143,44 +144,42 @@ def planilha_to_list(nome_planilha_entrada):
 def rotina_buscar_endereco():
     """ Realiza o loop contínuo sobre as planilhas de entrada e, as tranfere para um novo destino
     junto com a planilha com os resultados das buscas. """
+
+    def menor_3_digitos():
+        linha_saida = []
+        print(f'A palavra abaixo contém menos de 3 digitos:\n{x[1]}')
+        linha_saida.append(linha_entrada)
+        linha_saida.append('Texto de endereço é insuficiente, por ser menor que 3 digitos')
+        linha_saida.append(x[1])
+        for _ in range(4):
+            linha_saida.append('')
+        tabela_saida.append(linha_saida)
+        linha_saida = []
+
+    def resultado_none():
+        linha_saida = []
+        linha_saida.append(linha_entrada)
+        linha_saida.append('Texto de endereço não encontrou nenhum resultado na pesquisa')
+        linha_saida.append(x[1])
+        for _ in range(4):
+            linha_saida.append('')
+        tabela_saida.append(linha_saida)
+        linha_saida = []
     
+    def preencher_resultado():
+        linha_saida.append(linha_entrada)
+        linha_saida.append(x[0])
+        linha_saida.append(x[1]) 
+        for z in range(4):
+            linha_saida.append(y[z])
+    
+    def mover_arquivo_destino():
+        shutil.move(csv_to_dict(pagina_web)['pasta_entrada'] + planilha_entrada, endereco_pasta_destino)
+
     while True:
         linha_entrada = 1
         tabela_saida = []
         linha_saida = []
-
-        def menor_3_digitos():
-            linha_saida = []
-            print(f'A palavra abaixo contém menos de 3 digitos:\n{x[1]}')
-            linha_saida.append(linha_entrada)
-            linha_saida.append('Texto de endereço é insuficiente, por ser menor que 3 digitos')
-            linha_saida.append(x[1])
-            for _ in range(4):
-                linha_saida.append('')
-            tabela_saida.append(linha_saida)
-            linha_saida = []
-
-        def resultado_none():
-            linha_saida = []
-            linha_saida.append(linha_entrada)
-            linha_saida.append('Texto de endereço não encontrou nenhum resultado na pesquisa')
-            linha_saida.append(x[1])
-            for _ in range(4):
-                linha_saida.append('')
-            tabela_saida.append(linha_saida)
-            linha_saida = []
-        
-        def preencher_resultado():
-            linha_saida.append(linha_entrada)
-            linha_saida.append(x[0])
-            linha_saida.append(x[1]) 
-            for z in range(4):
-                linha_saida.append(y[z])
-        
-        def mover_arquivo_destino():
-        
-            shutil.move(csv_to_dict(pagina_web)['pasta_entrada'] + planilha_entrada, endereco_pasta_destino)
-        
         try:
             if identificar_entrada() is None:
                 loop_sem_entrada = True
