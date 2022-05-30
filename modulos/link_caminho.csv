@@ -1,0 +1,2 @@
+pasta_entrada,pasta_saida,url,xpath,xpath_celula_1,xpath_celula_2,xpath_celula_3,quantidade_resultado
+..\A-Entrada\,..\C-Saida\,https://www2.correios.com.br/sistemas/buscacep/BuscaCepEndereco.cfm,//*[@id="Geral"]/div/div/div[6]/input,/html/body/div[1]/div[3]/div[2]/div/div/div[2]/div[2]/div[2]/table/tbody/tr[,]/td[,],/html/body/div[1]/div[3]/div[2]/div/div/div[2]/div[2]/div[2]
